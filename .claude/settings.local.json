@@ -13,7 +13,11 @@
       "Bash(cmd /c \"dir C:\\\\Projects\\\\PersonalCA\\\\node_modules\\\\.bin\\\\npm\")",
       "Bash(cmd /c \"dir C:\\\\Users\\\\Bukky\\\\AppData\\\\Local\\\\Programs\\\\* | find /i \"\"node\"\"\")",
       "Bash(powershell -Command \"Get-Command node,npm -ErrorAction SilentlyContinue | Select-Object Name, Source\")",
-      "Bash(powershell \"Get-Command node -ErrorAction SilentlyContinue; Get-Command npm -ErrorAction SilentlyContinue\")"
+      "Bash(powershell \"Get-Command node -ErrorAction SilentlyContinue; Get-Command npm -ErrorAction SilentlyContinue\")",
+      "Bash(ls -la \"C:/Program Files \\(x86\\)/nodejs/\")",
+      "Bash(powershell -NoProfile -Command \"Get-ItemProperty HKLM:\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\* -ErrorAction SilentlyContinue | Where-Object {$_DisplayName -like ''*Node*''} | Select-Object DisplayName,InstallLocation | Format-Table -AutoSize\")",
+      "Bash(powershell -NoProfile -Command \"Get-ItemProperty HKLM:\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\* | Where-Object {$_DisplayName -match ''Node''} | Select-Object DisplayName,InstallLocation\")",
+      "Bash(powershell -NoProfile -Command \"Test-Path ''C:\\\\nodejs'' -PathType Container; Test-Path ''C:\\\\Users\\\\Bukky\\\\.nvm'' -PathType Container\")"
     ]
   }
 }

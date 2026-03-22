@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet,
-  StatusBar, SafeAreaView,
+  StatusBar, SafeAreaView, TouchableOpacity,
+  Modal, TextInput, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../theme/colors';
@@ -13,6 +14,8 @@ import {
   GROWW_STOCKS, GROWW_MUTUAL_FUNDS, US_STOCKS,
 } from '../data/userData';
 import { useDecisionEngine } from '../hooks/useDecisionEngine';
+import { saveClaudeApiKey, getClaudeApiKey, clearClaudeApiKey } from '../services/StorageService';
+import { resetClient } from '../services/AIBrainService';
 
 const fmt = (n: number) => {
   const abs = Math.abs(n);
@@ -46,6 +49,36 @@ export default function HomeScreen() {
   const totalPortfolio = GROWW_STOCKS.currentValue + GROWW_MUTUAL_FUNDS.currentValue + US_STOCKS.currentValue;
   const today = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
   const { actions, isEnhancing } = useDecisionEngine();
+  const [settingsVisible, setSettingsVisible] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState('');
+  const [hasKey, setHasKey] = useState(false);
+
+  React.useEffect(() => {
+    getClaudeApiKey().then(k => setHasKey(!!k));
+  }, [settingsVisible]);
+
+  async function handleSaveKey() {
+    if (!apiKeyInput.trim().startsWith('sk-ant-')) {
+      Alert.alert('Invalid Key', 'Claude API keys start with "sk-ant-"');
+      return;
+    }
+    await saveClaudeApiKey(apiKeyInput.trim());
+    resetClient();
+    setApiKeyInput('');
+    setSettingsVisible(false);
+    Alert.alert('Saved!', 'CA Sharma is now AI-powered. Refresh each screen to get live advice.');
+  }
+
+  async function handleClearKey() {
+    Alert.alert('Remove API Key', 'CA Sharma will switch back to static tips.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Remove', style: 'destructive', onPress: async () => {
+        await clearClaudeApiKey();
+        resetClient();
+        setSettingsVisible(false);
+      }},
+    ]);
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -54,10 +87,17 @@ export default function HomeScreen() {
 
         {/* ── HEADER ── */}
         <View style={styles.header}>
-          <View>
+          <View style={{ flex: 1 }}>
             <Text style={styles.greeting}>Namaste, {USER_PROFILE.name}! 🙏</Text>
             <Text style={styles.date}>{today}</Text>
           </View>
+          <TouchableOpacity
+            style={styles.settingsBtn}
+            onPress={() => setSettingsVisible(true)}
+          >
+            <Ionicons name="settings-outline" size={20} color="#AED6F1" />
+            {!hasKey && <View style={styles.settingsDot} />}
+          </TouchableOpacity>
           <View style={styles.cibilBadge}>
             <Text style={styles.cibilScore}>{USER_PROFILE.cibilScore}</Text>
             <Text style={styles.cibilLabel}>CIBIL</Text>
@@ -121,6 +161,47 @@ export default function HomeScreen() {
 
         <View style={{ height: 30 }} />
       </ScrollView>
+
+      {/* Settings / API Key Modal */}
+      <Modal visible={settingsVisible} transparent animationType="slide" onRequestClose={() => setSettingsVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>⚙️ Settings</Text>
+              <TouchableOpacity onPress={() => setSettingsVisible(false)}>
+                <Ionicons name="close" size={24} color={Colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.modalSection}>Claude API Key</Text>
+            <Text style={styles.modalDesc}>
+              {hasKey ? '✅ API key is set — CA Sharma is AI-powered' : '⚠️ No key set — using static tips only'}
+            </Text>
+            <TextInput
+              style={styles.modalInput}
+              value={apiKeyInput}
+              onChangeText={setApiKeyInput}
+              placeholder="Paste new key: sk-ant-api03-..."
+              placeholderTextColor={Colors.textLight}
+              secureTextEntry
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <TouchableOpacity
+              style={[styles.modalBtn, !apiKeyInput.trim() && styles.modalBtnDisabled]}
+              onPress={handleSaveKey}
+              disabled={!apiKeyInput.trim()}
+            >
+              <Text style={styles.modalBtnText}>{hasKey ? 'Update Key' : 'Save Key'}</Text>
+            </TouchableOpacity>
+            {hasKey && (
+              <TouchableOpacity style={styles.modalClear} onPress={handleClearKey}>
+                <Text style={styles.modalClearText}>Remove API Key</Text>
+              </TouchableOpacity>
+            )}
+            <Text style={styles.modalNote}>🔒 Key stored securely on device only. Get your key at console.anthropic.com</Text>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -226,4 +307,32 @@ const styles = StyleSheet.create({
   portfolioValue: { fontSize: 13, color: Colors.text, fontWeight: '600' },
   portfolioReturn: { fontSize: 11, fontWeight: '600' },
   portfolioDivider: { height: 1, backgroundColor: Colors.border, marginVertical: 4 },
+  settingsBtn: { padding: 6, marginRight: 8, position: 'relative' },
+  settingsDot: {
+    position: 'absolute', top: 4, right: 4,
+    width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.accent,
+  },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  modalCard: {
+    backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    padding: 24, paddingBottom: 40,
+  },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  modalTitle: { fontSize: 18, fontWeight: '700', color: Colors.text },
+  modalSection: { fontSize: 13, fontWeight: '700', color: Colors.primary, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
+  modalDesc: { fontSize: 13, color: Colors.textSecondary, marginBottom: 12 },
+  modalInput: {
+    borderWidth: 1, borderColor: Colors.border, borderRadius: 10,
+    paddingHorizontal: 14, paddingVertical: 12, fontSize: 14,
+    color: Colors.text, marginBottom: 12, backgroundColor: Colors.background,
+  },
+  modalBtn: {
+    backgroundColor: Colors.primary, borderRadius: 12,
+    paddingVertical: 14, alignItems: 'center', marginBottom: 8,
+  },
+  modalBtnDisabled: { backgroundColor: Colors.textLight },
+  modalBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  modalClear: { alignItems: 'center', paddingVertical: 8 },
+  modalClearText: { color: Colors.danger, fontSize: 13 },
+  modalNote: { fontSize: 11, color: Colors.textLight, textAlign: 'center', marginTop: 8 },
 });
