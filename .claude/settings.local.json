@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Program Files \\(x86\\)/**)",
+      "Read(//c/Users/Bukky/AppData/Roaming/**)",
+      "Read(//c/Users/Bukky/.nvm/versions/**)",
+      "Bash(cmd /c \"node --version && npm --version\")",
+      "Bash(cmd /c \"node --version\")",
+      "Bash(cmd /c \"npm --version\")",
+      "Bash(cmd /c \"where npm\")",
+      "Bash(cmd /c \"dir C:\\\\Projects\\\\PersonalCA\\\\node_modules\\\\.bin\\\\npm\")",
+      "Bash(cmd /c \"dir C:\\\\Users\\\\Bukky\\\\AppData\\\\Local\\\\Programs\\\\* | find /i \"\"node\"\"\")",
+      "Bash(powershell -Command \"Get-Command node,npm -ErrorAction SilentlyContinue | Select-Object Name, Source\")",
+      "Bash(powershell \"Get-Command node -ErrorAction SilentlyContinue; Get-Command npm -ErrorAction SilentlyContinue\")"
+    ]
+  }
+}
