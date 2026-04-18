@@ -44,7 +44,7 @@ export default function InvestmentScreen() {
 
         <View style={styles.header}>
           <Text style={styles.title}>Investment Portfolio</Text>
-          <Text style={styles.subtitle}>Groww + INDmoney • 22 Mar 2026</Text>
+          <Text style={styles.subtitle}>Groww + INDmoney • {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</Text>
         </View>
 
         {/* Total Portfolio */}

@@ -27,7 +27,7 @@ export async function scheduleLocalNotification(
     content: { title, body, data: data ?? {} },
     trigger: delaySeconds === 0
       ? null
-      : { seconds: delaySeconds, repeats: false },
+      : ({ type: 'timeInterval', seconds: delaySeconds, repeats: false } as any),
   });
 }
 

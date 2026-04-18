@@ -109,6 +109,17 @@ export default function ChatScreen() {
     );
   }, [messages, isStreaming, scrollToBottom]);
 
+  const clearChat = useCallback(async () => {
+    const welcome: ChatMessage = {
+      id: 'welcome',
+      role: 'assistant',
+      content: "Namaste Rituraj! 🙏 Main CA Sharma hun — tumhara personal financial advisor. I know your complete financial picture. Kya puchna hai? Ask me anything about your money!",
+      timestamp: new Date(),
+    };
+    setMessages([welcome]);
+    await saveChatHistory([{ ...welcome, timestamp: welcome.timestamp.toISOString() }]);
+  }, []);
+
   const handleQuickReply = (reply: string) => sendMessage(reply);
 
   return (
@@ -127,6 +138,11 @@ export default function ChatScreen() {
         <View style={styles.aiBadge}>
           <Text style={styles.aiBadgeText}>AI</Text>
         </View>
+        {messages.length > 1 && (
+          <TouchableOpacity style={styles.clearBtn} onPress={clearChat}>
+            <Ionicons name="trash-outline" size={18} color="#AED6F1" />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Messages */}
@@ -222,6 +238,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   aiBadgeText: { color: '#fff', fontSize: 10, fontWeight: '800' },
+  clearBtn: { padding: 6, marginLeft: 6 },
   messageList: { flex: 1 },
   messageContent: { paddingVertical: 16 },
   quickReplies: { paddingHorizontal: 12, paddingBottom: 8 },

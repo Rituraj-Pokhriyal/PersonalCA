@@ -14,6 +14,7 @@ import {
   GROWW_STOCKS, GROWW_MUTUAL_FUNDS, US_STOCKS,
 } from '../data/userData';
 import { useDecisionEngine } from '../hooks/useDecisionEngine';
+import { useMarketData } from '../hooks/useMarketData';
 import { saveClaudeApiKey, getClaudeApiKey, clearClaudeApiKey } from '../services/StorageService';
 import { resetClient } from '../services/AIBrainService';
 
@@ -49,6 +50,7 @@ export default function HomeScreen() {
   const totalPortfolio = GROWW_STOCKS.currentValue + GROWW_MUTUAL_FUNDS.currentValue + US_STOCKS.currentValue;
   const today = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
   const { actions, isEnhancing } = useDecisionEngine();
+  const { news } = useMarketData();
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState('');
   const [hasKey, setHasKey] = useState(false);
@@ -158,6 +160,24 @@ export default function HomeScreen() {
 
         {/* ── AI DECISION CARD (replaces static action list) ── */}
         <DecisionCard actions={actions} isEnhancing={isEnhancing} />
+
+        {/* ── NEWS HEADLINES ── */}
+        {news.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>📰 Financial Headlines</Text>
+            <View style={styles.newsCard}>
+              {news.slice(0, 5).map((item, i) => (
+                <View key={i} style={[styles.newsRow, i < Math.min(news.length, 5) - 1 && styles.newsRowBorder]}>
+                  <View style={styles.newsDot} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.newsTitle} numberOfLines={2}>{item.title}</Text>
+                    <Text style={styles.newsSource}>{item.source} • {item.publishedAt ? new Date(item.publishedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Today'}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
 
         <View style={{ height: 30 }} />
       </ScrollView>
@@ -307,6 +327,16 @@ const styles = StyleSheet.create({
   portfolioValue: { fontSize: 13, color: Colors.text, fontWeight: '600' },
   portfolioReturn: { fontSize: 11, fontWeight: '600' },
   portfolioDivider: { height: 1, backgroundColor: Colors.border, marginVertical: 4 },
+  newsCard: {
+    backgroundColor: Colors.card, marginHorizontal: 16, borderRadius: 12,
+    padding: 16, marginBottom: 16, shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 3,
+  },
+  newsRow: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 10, gap: 10 },
+  newsRowBorder: { borderBottomWidth: 1, borderBottomColor: Colors.border },
+  newsDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.primaryLight, marginTop: 6 },
+  newsTitle: { fontSize: 13, color: Colors.text, fontWeight: '500', lineHeight: 18 },
+  newsSource: { fontSize: 10, color: Colors.textLight, marginTop: 3 },
   settingsBtn: { padding: 6, marginRight: 8, position: 'relative' },
   settingsDot: {
     position: 'absolute', top: 4, right: 4,

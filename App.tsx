@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StatusBar, View, Text, TextInput, TouchableOpacity, StyleSheet, Modal, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal, Alert } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import AppNavigator from './src/navigation/AppNavigator';
 import { getClaudeApiKey, saveClaudeApiKey } from './src/services/StorageService';
 import { resetClient } from './src/services/AIBrainService';

@@ -17,7 +17,14 @@
       "Bash(ls -la \"C:/Program Files \\(x86\\)/nodejs/\")",
       "Bash(powershell -NoProfile -Command \"Get-ItemProperty HKLM:\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\* -ErrorAction SilentlyContinue | Where-Object {$_DisplayName -like ''*Node*''} | Select-Object DisplayName,InstallLocation | Format-Table -AutoSize\")",
       "Bash(powershell -NoProfile -Command \"Get-ItemProperty HKLM:\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\* | Where-Object {$_DisplayName -match ''Node''} | Select-Object DisplayName,InstallLocation\")",
-      "Bash(powershell -NoProfile -Command \"Test-Path ''C:\\\\nodejs'' -PathType Container; Test-Path ''C:\\\\Users\\\\Bukky\\\\.nvm'' -PathType Container\")"
+      "Bash(powershell -NoProfile -Command \"Test-Path ''C:\\\\nodejs'' -PathType Container; Test-Path ''C:\\\\Users\\\\Bukky\\\\.nvm'' -PathType Container\")",
+      "Bash(cmd /c \"for /f \"\"tokens=5\"\" %a in \\(''netstat -aon ^| findstr :8081''\\) do taskkill /F /PID %a\")",
+      "Bash(cmd /c \"netstat -aon | findstr :8081\")",
+      "Bash(cmd /c \"dir C:\\\\Projects\\\\PersonalCA\\\\assets\"\")",
+      "Bash(node -e \":*)",
+      "Bash(cmd /c \"where node && where npm\")",
+      "Bash(cmd /c \"dir \"\"C:\\\\Program Files\\\\nodejs\"\"\")",
+      "Bash(cmd /c \"set PATH\")"
     ]
   }
 }

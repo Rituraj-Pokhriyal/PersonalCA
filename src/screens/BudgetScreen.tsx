@@ -43,7 +43,7 @@ export default function BudgetScreen() {
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Budget Tracker</Text>
-          <Text style={styles.subtitle}>March 2026</Text>
+          <Text style={styles.subtitle}>{new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}</Text>
         </View>
 
         {/* Summary Cards */}

@@ -6,16 +6,8 @@ import {
 } from '../data/userData';
 import { getClaudeApiKey } from './StorageService';
 import { CA_SHARMA_SYSTEM_PROMPT, buildFullContext } from '../constants/aiPrompts';
-import Anthropic from '@anthropic-ai/sdk';
 
-let _aiClient: Anthropic | null = null;
-
-async function getAI(): Promise<Anthropic | null> {
-  const key = await getClaudeApiKey();
-  if (!key) return null;
-  if (!_aiClient) _aiClient = new Anthropic({ apiKey: key, dangerouslyAllowBrowser: true });
-  return _aiClient;
-}
+const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 
 // ── Rule-based actions (instant, no API) ─────────────────────────
 export function generateRuleBasedActions(): PriorityAction[] {
@@ -109,27 +101,35 @@ export async function enhanceActionsWithAI(
   ruleActions: PriorityAction[],
 ): Promise<PriorityAction[]> {
   try {
-    const ai = await getAI();
-    if (!ai) return ruleActions;
+    const apiKey = await getClaudeApiKey();
+    if (!apiKey) return ruleActions;
 
     const context = buildFullContext();
     const actionsSummary = ruleActions.map(a =>
       `${a.urgency.toUpperCase()}: ${a.title} — ${a.rationale}`
     ).join('\n');
 
-    const response = await ai.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 600,
-      system: CA_SHARMA_SYSTEM_PROMPT + '\n\n' + context,
-      messages: [{
-        role: 'user',
-        content: `Here are the rule-based priority actions I generated for Rituraj. Review them, add any missed items, and rank them by financial impact. Return as JSON array with same structure but improved rationale and estimatedImpact. Max 6 items.\n\n${actionsSummary}\n\nReturn ONLY valid JSON array.`,
-      }],
+    const res = await fetch(CLAUDE_API_URL, {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 600,
+        system: CA_SHARMA_SYSTEM_PROMPT + '\n\n' + context,
+        messages: [{
+          role: 'user',
+          content: `Here are the rule-based priority actions I generated for Rituraj. Review them, add any missed items, and rank them by financial impact. Return as JSON array with same structure but improved rationale and estimatedImpact. Max 6 items.\n\n${actionsSummary}\n\nReturn ONLY valid JSON array.`,
+        }],
+      }),
     });
 
-    const block = response.content[0];
-    if (block.type !== 'text') return ruleActions;
-    const text = block.text.trim();
+    if (!res.ok) return ruleActions;
+    const json = await res.json();
+    const text: string = json.content?.[0]?.text?.trim() ?? '';
     const match = text.match(/\[[\s\S]*\]/);
     if (!match) return ruleActions;
 
